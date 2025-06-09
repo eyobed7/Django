@@ -179,6 +179,8 @@ Now we need to migrate our changes. To do this, run the following two commands o
 python manage.py makemigrations
 python manage.py migrate
 ```
+## 0. Introduction to Django Development Environment Setup
+
 **Objective:** Gain familiarity with Django by setting up a Django development environment and creating a basic Django project. This task aims to introduce you to the workflow of Django projects, including project creation and running the development server.
 
 **Task Description:**  
