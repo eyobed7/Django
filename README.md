@@ -215,6 +215,310 @@ GitHub repository: `Final_DjangoLearnLab`
 Directory: `Introduction_to_Django`
 
 
+# Rendering HTML in Django
+
+Rendering HTML in Django is a fundamental part of building a web application. Here's a quick step-by-step guide to help you render HTML using Django:
+
+---
+
+## ✅ 1. **Set Up Your Django Project (if not already)**
+
+If you haven't started a project:
+
+```bash
+django-admin startproject myproject
+cd myproject
+python manage.py startapp myapp
+```
+
+---
+
+## ✅ 2. **Create a View in Your App**
+
+In `myapp/views.py`:
+
+```python
+from django.shortcuts import render
+
+def home(request):
+    return render(request, 'home.html')  # 'home.html' is your template
+```
+
+---
+
+## ✅ 3. **Create a Template Folder and HTML File**
+
+Inside your app folder (`myapp`), create a folder named `templates`, and inside it, create `home.html`:
+
+```
+myapp/
+├── templates/
+│   └── home.html
+```
+
+**Example `home.html`:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Form</title>
+</head>
+<body>
+    <h2>Login Page</h2>
+
+    <!-- ✅ Success message display -->
+    {% if message %}
+        <p style="color: green;">{{ message }}</p>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="username">Username:</label><br>
+        <input type="text" name="username" required><br><br>
+
+        <label for="password">Password:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>
+
+```
+
+---
+
+## ✅ 4. **Configure Template Settings**
+
+In `settings.py`, make sure `TEMPLATES` is set up correctly (it usually is by default):
+
+```python
+'DIRS': [],  # Or you can add ['templates'] if using a global templates folder
+```
+
+Also, make sure `'APP_DIRS': True` is enabled.
+
+---
+
+## ✅ 5. **Map URL to the View**
+
+In `myapp/urls.py` (create it if it doesn't exist):
+
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+]
+```
+
+Then include `myapp` URLs in your project's main `urls.py`:
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('myapp.urls')),
+]
+```
+
+---
+
+## ✅ 6. **Run the Server**
+
+```bash
+python manage.py runserver
+```
+
+Open your browser at `http://127.0.0.1:8000/` — you should see your rendered HTML page.
+
+---
+
+# Django Login Form with MySQL Database
+
+Great! You're building a Django login form that saves data (like username and password) to a MySQL database. Here's a complete step-by-step guide to achieve this:
+
+---
+
+## ✅ Overview
+
+1. Connect Django to MySQL
+2. Create a model (User or similar)
+3. Create a form in HTML
+4. Save form data to the database
+5. Render the form and handle submissions
+
+---
+
+## 🔧 Step 1: Connect Django to MySQL
+
+### 1. Install MySQL client:
+
+```bash
+pip install mysqlclient
+```
+
+If this fails on Windows, you can use:
+
+```bash
+pip install pymysql
+```
+
+Then in `__init__.py` of your project folder (next to `settings.py`):
+
+```python
+import pymysql
+pymysql.install_as_MySQLdb()
+```
+
+---
+
+### 2. Configure MySQL in `settings.py`:
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'your_db_name',
+        'USER': 'your_db_user',
+        'PASSWORD': 'your_db_password',
+        'HOST': 'localhost',  # or your database server
+        'PORT': '3306',
+    }
+}
+```
+
+Make sure this DB exists in MySQL already or create it manually using a tool like phpMyAdmin or MySQL CLI.
+
+---
+
+## 🧱 Step 2: Create a Model
+
+In `myapp/models.py`:
+
+```python
+from django.db import models
+
+class User(models.Model):
+    username = models.CharField(max_length=150)
+    password = models.CharField(max_length=128)  # Store hashed passwords in real apps!
+
+    def __str__(self):
+        return self.username
+```
+
+---
+
+## ⚙️ Step 3: Create and Apply Migrations
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+---
+
+## 📝 Step 4: Create HTML Login Form
+
+In `myapp/templates/login.html`:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Form</title>
+</head>
+<body>
+    <h2>Login Page</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="username">Username:</label><br>
+        <input type="text" name="username" required><br><br>
+
+        <label for="password">Password:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>
+```
+
+---
+
+## 🧠 Step 5: Create View Logic
+
+In `myapp/views.py`:
+
+```python
+from django.shortcuts import render
+from .models import User
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # Save to DB (not secure - just for learning)
+        user = User(username=username, password=password)
+        user.save()
+
+        return render(request, 'login.html', {'message': 'User saved successfully!'})
+
+    return render(request, 'login.html')
+```
+
+---
+
+## 🌐 Step 6: Map URL to View
+
+In `myapp/urls.py`:
+
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('login/', views.login_view, name='login'),
+]
+```
+
+In `project/urls.py`:
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('myapp.urls')),
+]
+```
+
+---
+
+## ✅ Step 7: Run the Server
+
+```bash
+python manage.py runserver
+```
+
+Visit `http://127.0.0.1:8000/login/` and try submitting the form. Data should be saved to your MySQL database.
+
+---
+
+### ⚠️ Important Notes
+
+* **Don't store passwords in plain text** in production! Use Django's authentication system with hashing.
+* Use `ModelForm` for better form management.
+* You can enable user login using Django's `auth` system if desired.
+
+---
+
 
 
 
